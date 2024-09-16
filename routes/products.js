@@ -4,12 +4,18 @@ const Product = require('../models/product');
 const Joi = require('joi');
 const moment = require('moment');
 const multer = require('multer');
+const fs = require('fs');
 const path = require('path');
+const auth = require('../middleware/auth'); // Auth middleware'ini içe aktarın
 
 // Multer yapılandırması
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+    const uploadDir = 'uploads/';
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir);
+    }
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     cb(null, `${Date.now()}-${file.originalname}`);
@@ -23,7 +29,7 @@ const productSchemaJoi = Joi.object({
   name: Joi.string().required(),
   price: Joi.number().min(0).max(1000000).required(),
   category: Joi.string().required(),
-  image: Joi.string().required() // Yeni image alanı
+  image: Joi.string().required()
 });
 
 router.get('/', async (req, res) => {
@@ -33,27 +39,13 @@ router.get('/', async (req, res) => {
     categoryName: product.category.name,
     id: product._id,
     unitPrice: product.price,
-    image: product.image, // Image alanını ekleyin
+    image: product.image,
     createdAt: moment(product.createdAt).format('DD MMMM YYYY')
   }));
   res.send(response);
 });
 
-router.post('/', upload.single('image'), async (req, res) => {
-  // Dosya türü kontrolü
-  const fileTypes = /jpeg|jpg|png/;
-  const extname = fileTypes.test(path.extname(req.file.originalname).toLowerCase());
-  const mimetype = fileTypes.test(req.file.mimetype);
-
-  if (!extname || !mimetype) {
-    return res.status(400).send({ error: 'Only jpeg, jpg, and png files are allowed' });
-  }
-
-  // Joi ile doğrulama
-  if (!req.file) {
-    return res.status(400).send({ error: 'Image file is required' });
-  }
-
+router.post('/', [auth, upload.single('image')], async (req, res) => {
   const { error } = productSchemaJoi.validate({ ...req.body, image: req.file.path });
   if (error) {
     return res.status(422).send({ error: error.details[0].message });
@@ -61,7 +53,7 @@ router.post('/', upload.single('image'), async (req, res) => {
 
   const product = new Product({
     ...req.body,
-    image: req.file.path // Image alanını ekleyin
+    image: req.file.path
   });
   await product.save();
   res.status(201).send(product);
