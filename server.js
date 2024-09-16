@@ -7,8 +7,9 @@ const rateLimit = require('express-rate-limit');
 const categoriesRoute = require('./routes/categories');
 const productsRoute = require('./routes/products');
 const webUsersRoute = require('./routes/webUsers');
-const ordersRoute = require('./routes/orders'); // Yeni order rotasını ekleyin
-const orderDetailsRoute = require('./routes/orderDetails'); // Yeni orderDetail rotasını ekleyin
+const ordersRoute = require('./routes/orders');
+const orderDetailsRoute = require('./routes/orderDetails');
+const cleanupRoute = require('./routes/cleanup'); // Yeni cleanup rotasını ekleyin
 
 // Çevresel değişkenleri yükleyin
 dotenv.config();
@@ -39,8 +40,11 @@ mongoose.connect(process.env.MONGODB_URI);
 app.use('/categories', categoriesRoute);
 app.use('/products', productsRoute);
 app.use('/webUsers', webUsersRoute);
-app.use('/orders', ordersRoute); // Yeni order rotasını ekleyin
-app.use('/orderDetails', orderDetailsRoute); // Yeni orderDetail rotasını ekleyin
+app.use('/orders', ordersRoute);
+app.use('/orderDetails', orderDetailsRoute);
+app.use('/cleanup', cleanupRoute); // Yeni cleanup rotasını ekleyin
+
+
 
 // Sunucuyu Başlatma
 app.listen(port, () => {
