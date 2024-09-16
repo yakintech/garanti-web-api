@@ -44,8 +44,6 @@ app.use('/orders', ordersRoute);
 app.use('/orderDetails', orderDetailsRoute);
 app.use('/cleanup', cleanupRoute); // Yeni cleanup rotasını ekleyin
 
-
-
 // Sunucuyu Başlatma
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

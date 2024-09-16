@@ -1,32 +1,28 @@
 const express = require('express');
 const router = express.Router();
 const Order = require('../models/order');
-const Joi = require('joi');
+const OrderDetail = require('../models/orderDetail');
 const auth = require('../middleware/auth');
 
-// Joi Şeması
-const orderSchemaJoi = Joi.object({
-  user: Joi.string().required(),
-  status: Joi.string().valid('Pending', 'Shipped', 'Delivered', 'Cancelled'),
-  totalAmount: Joi.number().required()
-});
-
-// Tüm siparişleri listeleme
+// Tüm siparişleri detaylarıyla birlikte listeleme
 router.get('/', auth, async (req, res) => {
-  const orders = await Order.find().populate('user', 'email').select('-__v');
-  res.send(orders);
-});
+  try {
+    const orders = await Order.find().populate('user', 'email').lean();
+    const orderIds = orders.map(order => order._id);
 
-// Yeni sipariş oluşturma
-router.post('/', auth, async (req, res) => {
-  const { error } = orderSchemaJoi.validate(req.body);
-  if (error) {
-    return res.status(422).send({ error: error.details[0].message });
+    const orderDetails = await OrderDetail.find({ order: { $in: orderIds } }).populate('product', 'name price').lean();
+
+    const ordersWithDetails = orders.map(order => {
+      return {
+        ...order,
+        details: orderDetails.filter(detail => detail.order.toString() === order._id.toString())
+      };
+    });
+
+    res.send(ordersWithDetails);
+  } catch (error) {
+    res.status(500).send({ error: 'An error occurred while fetching orders with details.' });
   }
-
-  const order = new Order(req.body);
-  await order.save();
-  res.status(201).send(order);
 });
 
 module.exports = router;
