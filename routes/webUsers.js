@@ -4,6 +4,10 @@ const WebUser = require('../models/webUser');
 const Joi = require('joi');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const dotenv = require('dotenv');
+
+// Çevresel değişkenleri yükleyin
+dotenv.config();
 
 // Joi Şeması
 const webUserSchemaJoi = Joi.object({
@@ -47,7 +51,7 @@ router.post('/login', async (req, res) => {
   }
 
   // JWT oluştur
-  const token = jwt.sign({ _id: user._id, email: user.email }, 'your_jwt_secret_key', { expiresIn: '1h' });
+  const token = jwt.sign({ _id: user._id, email: user.email }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
   res.send({ token });
 });
 
