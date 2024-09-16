@@ -9,27 +9,44 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // MongoDB Bağlantısı
-mongoose.connect('mongodb+srv://user_garanti:sWYRaGRpj8VuWxK1@cluster0.jcus0vv.mongodb.net/catchme-db', {
+mongoose.connect('mongodb+srv://user_garanti:sWYRaGRpj8VuWxK1@cluster0.jcus0vv.mongodb.net/garanti-db', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
 
-// Model Tanımlama
-const Item = mongoose.model('Item', new mongoose.Schema({
-  name: String,
-  quantity: Number
+const Category = mongoose.model('Category', new mongoose.Schema({
+    name: {
+        type: String,
+        required: true,
+        minlength: 3
+    },
+    description: String
+}));
+
+const Product = mongoose.model('Product', new mongoose.Schema({
+    name: {
+        type: String,
+        required: true,
+        minlength: 3
+    },
+    unitPrice: {
+        type: Number,
+        required: true,
+        min: 0
+    },
+    categoryID: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category',
+        required: true
+    }
 }));
 
 // Rotalar
-app.get('/items', async (req, res) => {
-  const items = await Item.find();
-  res.send(items);
-});
 
-app.post('/items', async (req, res) => {
-  const item = new Item(req.body);
-  await item.save();
-  res.send(item);
+app.post('/categories', async (req, res) => {
+  const category = new Category(req.body);
+  await category.save();
+  res.send(category);
 });
 
 // Sunucuyu Başlatma
