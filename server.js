@@ -10,12 +10,19 @@ const webUsersRoute = require('./routes/webUsers');
 const ordersRoute = require('./routes/orders');
 const orderDetailsRoute = require('./routes/orderDetails');
 const cleanupRoute = require('./routes/cleanup'); // Yeni cleanup rotasını ekleyin
+const cors = require('cors');
 
 // Çevresel değişkenleri yükleyin
 dotenv.config();
 
+
+
+
 const app = express();
 const port = 3000;
+
+// CORS'u etkinleştirin
+app.use(cors());
 
 // Helmet kullanarak HTTP başlıklarını güvenli hale getirin
 app.use(helmet());
